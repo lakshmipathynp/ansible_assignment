@@ -1,0 +1,16 @@
+---
+hosts: "{{reqhosts}}"
+become: yes
+gather_facts: true
+vars: 
+  ca_cert_file: "CA1.crt"
+  ca_cert_path: "/usr/local/share/ca-certificates/{{ ca_cert_file }}"
+  ca_cert_name: "{{ ca_cert_file.split('.')[0] }}"
+tasks: 
+  - name: verify the CA certificate validity
+    command: openssl x509 -in "{{ ca_cert_file }}" -noout -dates
+    register: certificate_validity
+
+  - name: Display certificate information  
+    debug: 
+      msg: "{{certificate_validity.stdout}}"
