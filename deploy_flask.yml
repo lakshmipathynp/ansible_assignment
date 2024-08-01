@@ -6,9 +6,11 @@
     pkg:
       - "python3"
       - "python3-pip"
+      - "python3-venv"
     version_check:
       - "pip3 --version"
       - "python3 --version"
+    venv_path: /opt/deployment/venv  
  
   tasks:
     - name: Ensure Python and pip are installed on Debian
@@ -44,9 +46,30 @@
           dest: /opt/example/Example-1.1.1-py3-none-any.whl
         - src: config.py
           dest: /opt/example/instance/
+        - src: run.sh
+          dest: /usr/local/bin/run.sh
         - src: example.service
-          dest: /etc/systemd/system/example.service 
+          dest: /etc/systemd/system/example.service
 
+    - name: Install Flask application from wheel file on tareget hosts
+      pip: 
+       name: /opt/example/Example-1.1.1-py3-none-any.whl
+
+    - name: Install virtual env
+      pip: 
+       name: virtualenv
+       state: present
+       executable: pip3
+    - name: Create virtual environment
+      command: python3 -m venv {{ venv_path }}
+      args: 
+        creates: "{{ venv_path }}"
+    - name: Install Gunicorn in virtual environment
+      pip: 
+       name: gunicorn
+       state: present
+       executable: "{{ venv_path }}/bin/pip"  
+             
     - name: Reload Systemd service
       systemd:
         daemon_reload: yes
@@ -55,4 +78,3 @@
         name: example
         state: started
         enabled: yes
-              
