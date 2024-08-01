@@ -1,5 +1,5 @@
 ---
-hosts: "{{reqhosts}}"
+hosts: "{{ reqhosts }}"
 become: yes
 gather_facts: true
 vars: 
@@ -11,27 +11,30 @@ vars:
   ca_cert_name: "{{ ca_cert_file.split('.')[0] }}"
 tasks: 
   - name: verify the CA certificate validity
-    command: openssl x509 -in "{{ ca_cert_file }}" -noout -dates
+    command: openssl x509 -in "{{ item }}" -noout -dates
     register: certificate_validity
+    with_items: "{{ca_cert_file}}"
 
   - name: Display certificate information  
     debug: 
       msg: "{{certificate_validity.stdout}}"
 
-  - name: copy CA certificate to target machines
+  - name: copy CA certificate to target machines Debian
     copy: 
-        src: "{{ca_cert_file}}"
-        dest: "{{ca_cert_path}}"
+        src: "{{ item }}"
+        dest: "{{ ca_cert_path }}"
         mode: '0644'
+    with_items: "{{ca_cert_file}}"    
   - name: Install Custom CA certificates on Debian
     command: update-ca-certificates
     when: ansible_os_family == 'Debian' 
   
-  - name: Install Custom CA certificates on RHEL
+  - name: Copy CA certificates on target machines RHEL
     copy: 
-        src: "{{ ca_cert_file }}"
-        dest: "/etc/pki/ca-trust/source/anchors/{{ ca_cert_file }}"
+        src: "{{ item }}"
+        dest: "/etc/pki/ca-trust/source/anchors/{{ item }}"
         mode: '0644'
+    with_items: "{{ ca_cert_file }}"   
   - name: Update CA trust store
     command: update-ca-trust extract    
     when: ansible_os_family == 'RedHat'
