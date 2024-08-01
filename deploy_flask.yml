@@ -10,7 +10,7 @@
     version_check:
       - "pip3 --version"
       - "python3 --version"
-    venv_path: /opt/deployment/venv  
+    venv_path: /opt/deployment/example 
  
   tasks:
     - name: Ensure Python and pip are installed on Debian
@@ -36,7 +36,7 @@
       loop:
         - /opt/example
         - /opt/example/instance
-           
+        - /opt/deployment           
     - name: Copy wheelfile,config.py and example.service files to target hosts
       copy: 
         src: "{{ item.src }}"
