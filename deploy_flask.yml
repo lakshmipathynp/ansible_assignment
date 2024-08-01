@@ -10,7 +10,7 @@
       - "pip3 --version"
       - "python3 --version"
   tasks:
-    - name: Ensure Python and pip are installed
+    - name: Ensure Python and pip are installed on Debian
       apt:
         name: "{{ pkg }}"
         state: present
@@ -18,8 +18,24 @@
       when: ansible_os_family == 'Debian'
     - name: Check pip version and python3 version
       shell: "{{ item }}"
-      register: version_output
+      register: version_debian_output
       with_items: "{{ version_check }}"
     - debug:
         msg: "{{ item.stdout_lines }}"
-      with_items: "{{ version_output.results }}"
+      with_items: "{{ version_deb_output.results }}"
+
+    - name: Ensure Python and pip are installed on Redhat
+      yum:
+        name: "{{ pkg }}"
+        state: present
+        update_cache: yes
+      when: ansible_os_family == 'RedHat'
+    - name: Check pip version and python3 version
+      shell: "{{ item }}"
+      register: version_redhat_output
+      with_items: "{{ version_check }}"
+    - debug:
+        msg: "{{ item.stdout_lines }}"
+      with_items: "{{ version_redhat_output.results }}"
+
+    
