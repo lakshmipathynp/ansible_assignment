@@ -9,6 +9,7 @@
     version_check:
       - "pip3 --version"
       - "python3 --version"
+ 
   tasks:
     - name: Ensure Python and pip are installed on Debian
       apt:
@@ -24,4 +25,34 @@
         msg: "{{ item.stdout_lines }}"
       with_items: "{{ version_deb_output.results }}"
 
-    
+    - name: Create directories in opt path for deployment
+      file: 
+        path: "{{ item }}"
+        state: directory
+        recurse: yes
+        mode: 0755
+      loop:
+        - /opt/example
+        - /opt/example/instance
+           
+    - name: Copy wheelfile,config.py and example.service files to target hosts
+      copy: 
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+      loop: 
+        - src: Example-1.1.1-py3-none-any.whl
+          dest: /opt/example/Example-1.1.1-py3-none-any.whl
+        - src: config.py
+          dest: /opt/example/instance/
+        - src: example.service
+          dest: /etc/systemd/system/example.service 
+
+    - name: Reload Systemd service
+      systemd:
+        daemon_reload: yes
+    - name: Start and enable example.service
+      systemd:
+        name: example
+        state: started
+        enabled: yes
+              
