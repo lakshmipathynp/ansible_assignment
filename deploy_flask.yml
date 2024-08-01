@@ -54,15 +54,15 @@
         - src: example.service
           dest: /etc/systemd/system/example.service
 
-    - name: Install Flask application from wheel file on tareget hosts
-      pip: 
-       name: /opt/example/Example-1.1.1-py3-none-any.whl
+  #  - name: Install Flask application from wheel file on target hosts
+  #    pip: 
+  #     name: /opt/example/Example-1.1.1-py3-none-any.whl
 
-    - name: Install virtual env
-      pip: 
-       name: virtualenv
-       state: present
-       executable: pip3
+  #  - name: Install virtual env
+  #    pip: 
+  #     name: virtualenv
+  #     state: present
+  #     executable: pip3
 
     - name: Create virtual environment
       command: python3 -m venv {{ venv_path }}
