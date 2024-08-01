@@ -17,7 +17,8 @@ tasks:
 
   - name: Display certificate information  
     debug: 
-      msg: "{{certificate_validity}}"
+      msg: "{{ item.stdout_lines }}"
+    with_items: "{{ certificate_info.results }}"  
 
   - name: copy CA certificate to target machines Debian
     copy: 
