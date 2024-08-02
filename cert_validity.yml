@@ -12,7 +12,7 @@ vars:
 tasks: 
   - name: verify the CA certificate validity
     command: openssl x509 -in "{{ item }}" -noout -dates
-    register: certificate_validity
+    register: certificate_info
     with_items: "{{ca_cert_file}}"
 
   - name: Display certificate information  
@@ -29,13 +29,4 @@ tasks:
   - name: Install Custom CA certificates on Debian
     command: update-ca-certificates
     when: ansible_os_family == 'Debian' 
-  
-  - name: Copy CA certificates on target machines RHEL
-    copy: 
-        src: "{{ item }}"
-        dest: "/etc/pki/ca-trust/source/anchors/{{ item }}"
-        mode: '0644'
-    with_items: "{{ ca_cert_file }}"   
-  - name: Update CA trust store
-    command: update-ca-trust extract    
-    when: ansible_os_family == 'RedHat'
+
