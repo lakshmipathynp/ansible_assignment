@@ -62,3 +62,24 @@
       register: wheel_output
     - debug:
         msg: "{{ wheel_output }}"
+
+    - name: Set up environment variables for Flask application
+      lineinfile:
+        path: /etc/environment
+        line: "{{ item }}"
+        create: yes
+      with_items:
+        - DB_PATH=postgresql://example_user:myVerySecretDatabasePassword@localhost:5432/example_db
+        - SECRET_KEY=AVerySafeExampleKey123!
+        - INSTANCE_PATH=/opt/example/instance
+        - ADMIN_GROUPS=Read-only
+    
+    - name: Reload systemd to pick up new service named myapp.service
+      systemd:
+        daemon_reload: yes
+
+    - name: Start and enable Flask service
+      systemd:
+        name: myapp
+        state: started
+        enabled: yes
