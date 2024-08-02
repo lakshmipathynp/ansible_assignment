@@ -10,7 +10,9 @@
     pkg1:
       - "gunicorn"
       - "flask"
-    venv_path: /opt/deployment/venv
+    venv_path: /opt/deployment/venv 
+  vars_files: 
+     - env_vars.yml  
 
   tasks:
     - name: Ensure python3 installed on Debian
@@ -69,8 +71,8 @@
         line: "{{ item }}"
         create: yes
       with_items:
-        - DB_PATH=postgresql://example_user:myVerySecretDatabasePassword@localhost:5432/example_db
-        - SECRET_KEY=AVerySafeExampleKey123!
+        - DB_PATH= "{{ DB_PATH }}" 
+        - SECRET_KEY= "{{ SECRET_KEY }}" 
         - INSTANCE_PATH=/opt/example/instance
         - ADMIN_GROUPS=Read-only
     
