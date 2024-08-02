@@ -1,5 +1,5 @@
 ---
-- name: Deploy and run Flask application
+- name: Deploy and run myapp application in virtualenvironment
   hosts: localhost
   become: yes
   vars:

@@ -1,32 +1,48 @@
 ---
-hosts: "{{ reqhosts }}"
-become: yes
-gather_facts: true
-vars: 
-  ca_cert_file: 
-     - "CA1.crt"
-     - "CA2.crt"
-     - "CA3.crt"
-  ca_cert_path: "/usr/local/share/ca-certificates/{{ ca_cert_file }}"
-  ca_cert_name: "{{ ca_cert_file.split('.')[0] }}"
-tasks: 
-  - name: verify the CA certificate validity
-    command: openssl x509 -in "{{ item }}" -noout -dates
-    register: certificate_info
-    with_items: "{{ca_cert_file}}"
+- name: copy cert and keys to multiple hosts
+  hosts: localhost
+  become: yes
+  gather_facts: true
+  vars:
+   cert_files:
+     - { src: "CA1.crt", dest: "/usr/local/share/ca-certificates/CA1.crt" }
+     - { src: "CA2.crt", dest: "/usr/local/share/ca-certificates/CA2.crt" }
+     - { src: "CA3.crt", dest: "/usr/local/share/ca-certificates/CA3.crt" }
+   cert_keys:
+     - { src: "CA1.key", dest: "/usr/local/share/ca-certificates/CA1.key" }
+     - { src: "CA2.key", dest: "/usr/local/share/ca-certificates/CA2.key" }
+     - { src: "CA3.key", dest: "/usr/local/share/ca-certificates/CA3.key" }
 
-  - name: Display certificate information  
-    debug: 
-      msg: "{{ item.stdout_lines }}"
-    with_items: "{{ certificate_info.results }}"  
+   ca_cert_file:
+      - "CA1.crt"
+      - "CA2.crt"
+      - "CA3.crt"
+  tasks:
+   - name: Copy CA certificates to target machines
+     copy:
+       src: "{{ item.src }}"
+       dest: "{{ item.dest }}"
+       mode: '0644'
+       remote_src: yes
+     with_items: "{{ cert_files }}"
 
-  - name: copy CA certificate to target machines Debian
-    copy: 
-        src: "{{ item }}"
-        dest: "{{ ca_cert_path }}"
-        mode: '0644'
-    with_items: "{{ca_cert_file}}"    
-  - name: Install Custom CA certificates on Debian
-    command: update-ca-certificates
-    when: ansible_os_family == 'Debian' 
+   - name: Copy CA private keys to target machines
+     copy:
+       src: "{{ item.src }}"
+       dest: "{{ item.dest }}"
+       mode: '0644'
+       remote_src: yes
+     with_items: "{{ cert_keys }}"
 
+   - name: verify the CA certificate validity
+     command: openssl x509 -in "{{ item }}" -noout -dates
+     register: certificate_info
+     with_items: "{{ca_cert_file}}"
+
+   - name: Display certificate information
+     debug:
+       msg: "{{ item.stdout_lines }}"
+     with_items: "{{ certificate_info.results }}"
+   - name: Install Custom CA certificates on Debian
+     command: update-ca-certificates
+     when: ansible_os_family == 'Debian'
